@@ -23,4 +23,16 @@ source env/bin/activate
 pip install -r requirements.txt
 ```
 
+Once all this is set, you can use
 
+```bash
+python3 run.py inspect <ROM.rom>
+```
+
+on an existing ROM file to show its content.
+
+To generate a scad model, use:
+
+```bash
+python3 run.py export <ROM.rom> output.scad
+```
