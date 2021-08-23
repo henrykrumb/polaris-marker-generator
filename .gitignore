@@ -127,3 +127,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+#### project-specific part starts here ####
+*.scad
+*.stl
+*.rom
+
