@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
+import os
 import struct
+
+import click
 
 import numpy as np
 
@@ -41,7 +44,7 @@ class Marker:
 
     def write_ROM(self, filename):
         def pack_triplet(triplet):
-            return struct.pack('fff', *triplet)
+            return struct.pack('fff', triplet[0], -triplet[1], triplet[2])
         # experimental!
         with open(filename, 'wb') as f:
             f.write('NDI'.encode('ASCII'))
@@ -71,7 +74,23 @@ class Marker:
 
         def unpack_triplet(pos):
             arr = np.array(struct.unpack('fff', rom[pos:pos+12]))
-            return np.array([arr[2], arr[1], arr[0]])
+            return np.array([arr[2], -arr[1], arr[0]])
+
+        def unpack_int(pos):
+            return struct.unpack('i', rom[pos:pos+4])[0]
+
+        def unpack_uint(pos):
+            return struct.unpack('I', rom[pos:pos+4])[0]
+
+        def unpack_float(pos):
+            return struct.unpack('f', rom[pos:pos+4])[0]
+
+        print(rom[3:72])
+        for i in range(3, 72 - 4):
+            print(i, unpack_float(i))
+
+        v0 = unpack_float(36)
+        v1 = unpack_float(64)
 
         marker.A = unpack_triplet(72)
         marker.B = unpack_triplet(84)
@@ -79,6 +98,8 @@ class Marker:
         marker.D = unpack_triplet(108)
 
         #print(rom[120:312])
+        #for i in range(120, 312 - 4):
+        #    print(i, unpack_int(i))
 
         marker.MA = unpack_triplet(312)
         marker.MB = unpack_triplet(324)
@@ -86,60 +107,45 @@ class Marker:
         marker.MD = unpack_triplet(348)
 
         #print(rom[360:580])
+        #for i in range(360, 580 - 4):
+        #    print(i, unpack_int(i))
         
         marker.serial = rom[580:599].decode('ASCII')
 
         return marker
 
     def to_scad(self):
-        text = scad.union([
+        with open(os.path.join(os.path.dirname(__file__), 'pin.scad'), 'r') as f:
+            text = f.read()
+
+        cyl = scad.chamfered_cylinder(6.5, 9.4 / 2)
+        for node in (self.A, self.B, self.C, self.D):        
+            text += scad.translate(node[0], node[1], 6.5, [scad.call_module('pin')])()
+        text += '\n'
+        text += scad.union([
             scad.hull([
-                scad.translate(*self.A, [
-                    scad.chamfered_cylinder(6.5, 9.4 / 2)
-                ]),
-                scad.translate(*self.B, [
-                    scad.chamfered_cylinder(6.5, 9.4 / 2)
-                ])
+                scad.translate(*self.A, [cyl]),
+                scad.translate(*self.B, [cyl])
             ]),
             scad.hull([
-                scad.translate(*self.A, [
-                    scad.chamfered_cylinder(6.5, 9.4 / 2)
-                ]),
-                scad.translate(*self.C, [
-                    scad.chamfered_cylinder(6.5, 9.4 / 2)
-                ])
+                scad.translate(*self.A, [cyl]),
+                scad.translate(*self.C, [cyl])
             ]),
             scad.hull([
-                scad.translate(*self.A, [
-                    scad.chamfered_cylinder(6.5, 9.4 / 2)
-                ]),
-                scad.translate(*self.D, [
-                    scad.chamfered_cylinder(6.5, 9.4 / 2)
-                ])
+                scad.translate(*self.A, [cyl]),
+                scad.translate(*self.D, [cyl])
             ]),
             scad.hull([
-                scad.translate(*self.B, [
-                    scad.chamfered_cylinder(6.5, 9.4 / 2)
-                ]),
-                scad.translate(*self.C, [
-                    scad.chamfered_cylinder(6.5, 9.4 / 2)
-                ])
+                scad.translate(*self.B, [cyl]),
+                scad.translate(*self.C, [cyl])
             ]),
             scad.hull([
-                scad.translate(*self.B, [
-                    scad.chamfered_cylinder(6.5, 9.4 / 2)
-                ]),
-                scad.translate(*self.D, [
-                    scad.chamfered_cylinder(6.5, 9.4 / 2)
-                ])
+                scad.translate(*self.B, [cyl]),
+                scad.translate(*self.D, [cyl])
             ]),
             scad.hull([
-                scad.translate(*self.C, [
-                    scad.chamfered_cylinder(6.5, 9.4 / 2)
-                ]),
-                scad.translate(*self.D, [
-                    scad.chamfered_cylinder(6.5, 9.4 / 2)
-                ])
+                scad.translate(*self.C, [cyl]),
+                scad.translate(*self.D, [cyl])
             ])
-        ])
+        ])()
         return text

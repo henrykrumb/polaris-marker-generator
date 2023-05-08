@@ -34,6 +34,22 @@ def hull(children):
     return _inner
 
 
+def call_module(name, *args, **kwargs):
+    def _inner(indent=0):
+        nonlocal name
+        text = '  ' * indent + name + '('
+        if args:
+            text += ','.join(*args)
+            if kwargs:
+                text += ','
+        if kwargs:
+            kvpairs = [f'{k}={v}' for k, v in kwargs.items]
+            text += ','.join(kvpairs)
+        text += ');'
+        return text
+    return _inner
+
+
 def union(children):
     def _inner(indent=0):
         nonlocal children

@@ -28,7 +28,7 @@ def inspect(filename: str):
 @click.option('--output', '-o', help='output filename', required=False)
 def export(filename: str, output: str):
     marker = Marker.read_ROM(filename)
-    scad = marker.to_scad()()
+    scad = marker.to_scad()
     if not output:
         click.secho(scad)
     else:
