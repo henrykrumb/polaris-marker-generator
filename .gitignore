@@ -130,7 +130,6 @@ dmypy.json
 
 
 #### project-specific part starts here ####
-*.scad
 *.stl
 *.rom
 
