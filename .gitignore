@@ -132,4 +132,5 @@ dmypy.json
 #### project-specific part starts here ####
 *.stl
 *.rom
-
+*.scad
+!markergen/pin.scad
