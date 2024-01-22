@@ -36,5 +36,5 @@ on an existing ROM file to show its content.
 To generate a scad model, use:
 
 ```bash
-python3 run.py export <ROM.rom> output.scad
+python3 run.py export <ROM.rom> -o <OUTPUT.scad>
 ```
