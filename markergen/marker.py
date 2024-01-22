@@ -78,9 +78,9 @@ class Marker:
         def unpack_float(pos):
             return struct.unpack("f", rom[pos : pos + 4])[0]
 
-        print(rom[3:72])
-        for i in range(3, 72 - 4):
-            print(i, unpack_float(i))
+        #print(rom[3:72])
+        #for i in range(3, 72 - 4):
+        #    print(i, unpack_float(i))
 
         v0 = unpack_float(36)
         v1 = unpack_float(64)
@@ -107,34 +107,38 @@ class Marker:
 
         return marker
 
-    def to_scad(self):
+    def to_scad(self, marker_height: float = 6.5):
         with open(os.path.join(os.path.dirname(__file__), "pin.scad"), "r") as f:
             text = f.read()
 
-        cyl = scad.chamfered_cylinder(6.5, 9.4 / 2)
+        cyl = scad.chamfered_cylinder(marker_height, 9.4 / 2)
         for node in (self.A, self.B, self.C, self.D):
-            text += scad.translate(node[0], node[1], 6.5, [scad.call_module("pin")])()
+            text += scad.translate(
+                node[0], node[1], marker_height, [scad.call_module("pin")]
+            )()
         text += "\n"
+        # TODO create proper optimization strategy that eliminates redundant connections
+        # maybe the edges are encoded somewhere in the rom already?
         text += scad.union(
             [
-                scad.hull(
-                    [scad.translate(*self.A, [cyl]), scad.translate(*self.B, [cyl])]
-                ),
+                # scad.hull(
+                #    [scad.translate(*self.A, [cyl]), scad.translate(*self.B, [cyl])]
+                # ),
                 scad.hull(
                     [scad.translate(*self.A, [cyl]), scad.translate(*self.C, [cyl])]
                 ),
-                scad.hull(
-                    [scad.translate(*self.A, [cyl]), scad.translate(*self.D, [cyl])]
-                ),
-                scad.hull(
-                    [scad.translate(*self.B, [cyl]), scad.translate(*self.C, [cyl])]
-                ),
+                # scad.hull(
+                #    [scad.translate(*self.A, [cyl]), scad.translate(*self.D, [cyl])]
+                # ),
+                # scad.hull(
+                #    [scad.translate(*self.B, [cyl]), scad.translate(*self.C, [cyl])]
+                # ),
                 scad.hull(
                     [scad.translate(*self.B, [cyl]), scad.translate(*self.D, [cyl])]
                 ),
-                scad.hull(
-                    [scad.translate(*self.C, [cyl]), scad.translate(*self.D, [cyl])]
-                ),
+                # scad.hull(
+                #    [scad.translate(*self.C, [cyl]), scad.translate(*self.D, [cyl])]
+                # ),
             ]
         )()
         return text
