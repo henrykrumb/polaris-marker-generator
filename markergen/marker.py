@@ -19,6 +19,12 @@ class Marker:
     MB: np.array
     MC: np.array
     MD: np.array
+    marker_type: int
+    maximum_marker_error: float
+    maximum_marker_angle: int
+    minimum_markers: int
+    tool_type: int
+    tool_subtype: int
 
     def to_dict(self) -> dict:
         D = {}
@@ -54,6 +60,7 @@ class Marker:
         rom = None
         with open(filename, "rb") as f:
             rom = f.read()
+
         magic = rom[:3]
         if magic.decode("ASCII") != "NDI":
             click.secho("[err] Not an NDI ROM file.")
@@ -78,11 +85,12 @@ class Marker:
         def unpack_float(pos):
             return struct.unpack("f", rom[pos : pos + 4])[0]
 
-        #print(rom[3:72])
-        #for i in range(3, 72 - 4):
-        #    print(i, unpack_float(i))
-
-        v0 = unpack_float(36)
+        marker.tool_subtype = unpack_int(9) # ???
+        marker.tool_type = unpack_int(12) # ???
+        marker.marker_type = unpack_int(20) # ???
+        marker.maximum_marker_angle = unpack_int(24)
+        marker.minimum_markers = unpack_int(32)
+        marker.maximum_marker_error = unpack_float(36)
         v1 = unpack_float(64)
 
         marker.A = unpack_triplet(72)
@@ -90,18 +98,19 @@ class Marker:
         marker.C = unpack_triplet(96)
         marker.D = unpack_triplet(108)
 
-        # print(rom[120:312])
-        # for i in range(120, 312 - 4):
-        #    print(i, unpack_int(i))
+        #print(rom[120:312])
+        #for i in range(120, 312 - 4):
+        #   print(i, unpack_int(i))
 
+        # normal vectors
         marker.MA = unpack_triplet(312)
         marker.MB = unpack_triplet(324)
         marker.MC = unpack_triplet(336)
         marker.MD = unpack_triplet(348)
 
-        # print(rom[360:580])
-        # for i in range(360, 580 - 4):
-        #    print(i, unpack_int(i))
+        #print(rom[360:580])
+        #for i in range(360, 580 - 4):
+        #   print(i, unpack_int(i))
 
         marker.serial = rom[580:599].decode("ASCII")
 
